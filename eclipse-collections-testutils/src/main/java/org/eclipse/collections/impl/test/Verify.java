@@ -92,6 +92,7 @@ public final class Verify extends Assert
     private static final byte[] LINE_SEPARATOR = {'\n'};
     private static final Encoder ENCODER = Base64.getMimeEncoder(76, LINE_SEPARATOR);
     private static final Decoder DECODER = Base64.getMimeDecoder();
+    private static final String SHOULD_BE_EMPTY_STRING = " should be empty; actual size:<";
 
     private Verify()
     {
@@ -120,15 +121,15 @@ public final class Verify extends Assert
 
         if (Iterate.notEmpty(actualIterable))
         {
-            fail(iterableName + " should be empty; actual size:<" + Iterate.sizeOf(actualIterable) + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(actualIterable) + '>');
         }
         if (!Iterate.isEmpty(actualIterable))
         {
-            fail(iterableName + " should be empty; actual size:<" + Iterate.sizeOf(actualIterable) + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(actualIterable) + '>');
         }
         if (Iterate.sizeOf(actualIterable) != 0)
         {
-            fail(iterableName + " should be empty; actual size:<" + Iterate.sizeOf(actualIterable) + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(actualIterable) + '>');
         }
     }
 
@@ -149,35 +150,35 @@ public final class Verify extends Assert
 
         if (Iterate.notEmpty(actualMutableMapIterable))
         {
-            fail(mutableMapIterableName + " should be empty; actual size:<" + Iterate.sizeOf(actualMutableMapIterable) + '>');
+            fail(mutableMapIterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(actualMutableMapIterable) + '>');
         }
         if (!Iterate.isEmpty(actualMutableMapIterable))
         {
-            fail(mutableMapIterableName + " should be empty; actual size:<" + Iterate.sizeOf(actualMutableMapIterable) + '>');
+            fail(mutableMapIterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(actualMutableMapIterable) + '>');
         }
         if (!actualMutableMapIterable.isEmpty())
         {
-            fail(mutableMapIterableName + " should be empty; actual size:<" + Iterate.sizeOf(actualMutableMapIterable) + '>');
+            fail(mutableMapIterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(actualMutableMapIterable) + '>');
         }
         if (actualMutableMapIterable.notEmpty())
         {
-            fail(mutableMapIterableName + " should be empty; actual size:<" + Iterate.sizeOf(actualMutableMapIterable) + '>');
+            fail(mutableMapIterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(actualMutableMapIterable) + '>');
         }
         if (!actualMutableMapIterable.isEmpty())
         {
-            fail(mutableMapIterableName + " should be empty; actual size:<" + actualMutableMapIterable.size() + '>');
+            fail(mutableMapIterableName + SHOULD_BE_EMPTY_STRING + actualMutableMapIterable.size() + '>');
         }
         if (!actualMutableMapIterable.keySet().isEmpty())
         {
-            fail(mutableMapIterableName + " should be empty; actual size:<" + actualMutableMapIterable.keySet().size() + '>');
+            fail(mutableMapIterableName + SHOULD_BE_EMPTY_STRING + actualMutableMapIterable.keySet().size() + '>');
         }
         if (!actualMutableMapIterable.values().isEmpty())
         {
-            fail(mutableMapIterableName + " should be empty; actual size:<" + actualMutableMapIterable.values().size() + '>');
+            fail(mutableMapIterableName + SHOULD_BE_EMPTY_STRING + actualMutableMapIterable.values().size() + '>');
         }
         if (!actualMutableMapIterable.entrySet().isEmpty())
         {
-            fail(mutableMapIterableName + " should be empty; actual size:<" + actualMutableMapIterable.entrySet().size() + '>');
+            fail(mutableMapIterableName + SHOULD_BE_EMPTY_STRING + actualMutableMapIterable.entrySet().size() + '>');
         }
     }
 
@@ -199,15 +200,15 @@ public final class Verify extends Assert
 
         if (primitiveIterable.notEmpty())
         {
-            fail(iterableName + " should be empty; actual size:<" + primitiveIterable.size() + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + primitiveIterable.size() + '>');
         }
         if (!primitiveIterable.isEmpty())
         {
-            fail(iterableName + " should be empty; actual size:<" + primitiveIterable.size() + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + primitiveIterable.size() + '>');
         }
         if (primitiveIterable.size() != 0)
         {
-            fail(iterableName + " should be empty; actual size:<" + primitiveIterable.size() + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + primitiveIterable.size() + '>');
         }
     }
 
@@ -228,15 +229,15 @@ public final class Verify extends Assert
 
         if (Iterate.notEmpty(iterable))
         {
-            fail(iterableName + " should be empty; actual size:<" + Iterate.sizeOf(iterable) + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(iterable) + '>');
         }
         if (!Iterate.isEmpty(iterable))
         {
-            fail(iterableName + " should be empty; actual size:<" + Iterate.sizeOf(iterable) + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(iterable) + '>');
         }
         if (Iterate.sizeOf(iterable) != 0)
         {
-            fail(iterableName + " should be empty; actual size:<" + Iterate.sizeOf(iterable) + '>');
+            fail(iterableName + SHOULD_BE_EMPTY_STRING + Iterate.sizeOf(iterable) + '>');
         }
     }
 
@@ -304,39 +305,39 @@ public final class Verify extends Assert
 
         if (actualMultimap.notEmpty())
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.size() + '>');
         }
         if (!actualMultimap.isEmpty())
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.size() + '>');
         }
         if (actualMultimap.size() != 0)
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.size() + '>');
         }
         if (actualMultimap.sizeDistinct() != 0)
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.size() + '>');
         }
         if (!actualMultimap.keyBag().isEmpty())
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.keyBag().size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.keyBag().size() + '>');
         }
         if (!actualMultimap.keysView().isEmpty())
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.keysView().size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.keysView().size() + '>');
         }
         if (!actualMultimap.valuesView().isEmpty())
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.valuesView().size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.valuesView().size() + '>');
         }
         if (!actualMultimap.keyValuePairsView().isEmpty())
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.keyValuePairsView().size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.keyValuePairsView().size() + '>');
         }
         if (!actualMultimap.keyMultiValuePairsView().isEmpty())
         {
-            fail(multimapName + " should be empty; actual size:<" + actualMultimap.keyMultiValuePairsView().size() + '>');
+            fail(multimapName + SHOULD_BE_EMPTY_STRING + actualMultimap.keyMultiValuePairsView().size() + '>');
         }
     }
 
@@ -350,23 +351,23 @@ public final class Verify extends Assert
 
         if (!actualMap.isEmpty())
         {
-            fail(mapName + " should be empty; actual size:<" + actualMap.size() + '>');
+            fail(mapName + SHOULD_BE_EMPTY_STRING + actualMap.size() + '>');
         }
         if (actualMap.size() != 0)
         {
-            fail(mapName + " should be empty; actual size:<" + actualMap.size() + '>');
+            fail(mapName + SHOULD_BE_EMPTY_STRING + actualMap.size() + '>');
         }
         if (!actualMap.keySet().isEmpty())
         {
-            fail(mapName + " should be empty; actual size:<" + actualMap.keySet().size() + '>');
+            fail(mapName + SHOULD_BE_EMPTY_STRING + actualMap.keySet().size() + '>');
         }
         if (!actualMap.values().isEmpty())
         {
-            fail(mapName + " should be empty; actual size:<" + actualMap.values().size() + '>');
+            fail(mapName + SHOULD_BE_EMPTY_STRING + actualMap.values().size() + '>');
         }
         if (!actualMap.entrySet().isEmpty())
         {
-            fail(mapName + " should be empty; actual size:<" + actualMap.entrySet().size() + '>');
+            fail(mapName + SHOULD_BE_EMPTY_STRING + actualMap.entrySet().size() + '>');
         }
     }
 
