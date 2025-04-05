@@ -29,11 +29,19 @@ public interface Combiner<T> extends Serializable
      *
      * @param thingsToCombine la collection d'éléments à combiner
      * @throws NullPointerException si thingsToCombine est null
+     * @throws CombinerException si une erreur survient pendant la combinaison
      */
     default void combineAll(Iterable<T> thingsToCombine)
     {
         Objects.requireNonNull(thingsToCombine, "thingsToCombine ne peut pas être null");
-        Iterate.forEach(thingsToCombine, this::combineOne);
+        try
+        {
+            Iterate.forEach(thingsToCombine, this::combineOne);
+        }
+        catch (Exception e)
+        {
+            throw new CombinerException("Erreur lors de la combinaison des éléments", e);
+        }
     }
 
     /**
@@ -41,6 +49,7 @@ public interface Combiner<T> extends Serializable
      *
      * @param thingToCombine l'élément à combiner
      * @throws NullPointerException si thingToCombine est null
+     * @throws CombinerException si une erreur survient pendant la combinaison
      */
     void combineOne(T thingToCombine);
 
@@ -58,6 +67,7 @@ public interface Combiner<T> extends Serializable
      * pour ajouter des validations spécifiques.
      *
      * @return true si le combinateur est valide, false sinon
+     * @throws CombinerValidationException si le combinateur n'est pas valide
      */
     default boolean isValid()
     {
@@ -68,9 +78,47 @@ public interface Combiner<T> extends Serializable
      * Réinitialise l'état du combinateur.
      * Par défaut, ne fait rien. Les implémentations peuvent surcharger cette méthode
      * pour réinitialiser leur état interne.
+     *
+     * @throws CombinerException si une erreur survient pendant la réinitialisation
      */
     default void reset()
     {
         // Ne fait rien par défaut
+    }
+}
+
+/**
+ * Exception levée lorsqu'une erreur survient pendant la combinaison des éléments.
+ */
+class CombinerException extends RuntimeException
+{
+    private static final long serialVersionUID = 1L;
+
+    public CombinerException(String message)
+    {
+        super(message);
+    }
+
+    public CombinerException(String message, Throwable cause)
+    {
+        super(message, cause);
+    }
+}
+
+/**
+ * Exception levée lorsqu'une validation du combinateur échoue.
+ */
+class CombinerValidationException extends RuntimeException
+{
+    private static final long serialVersionUID = 1L;
+
+    public CombinerValidationException(String message)
+    {
+        super(message);
+    }
+
+    public CombinerValidationException(String message, Throwable cause)
+    {
+        super(message, cause);
     }
 }
