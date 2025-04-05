@@ -297,8 +297,41 @@ public final class ServiceLoaderUtils
      * @param serviceClass La classe du service à charger
      * @param <T> Le type du service
      * @return Une instance du service ou un proxy qui lève une exception
+     * @throws IllegalArgumentException si la classe de service est null
      */
     public static <T> T loadServiceClass(Class<T> serviceClass)
+    {
+        validateServiceClass(serviceClass);
+        
+        T serviceInstance = tryLoadWithClassLoaders(serviceClass);
+        if (serviceInstance == null)
+        {
+            serviceInstance = createProxyInstance(serviceClass, 
+                String.format(ERROR_NO_IMPLEMENTATION, serviceClass.getSimpleName()));
+        }
+        return serviceInstance;
+    }
+
+    /**
+     * Valide que la classe de service n'est pas null.
+     * @param serviceClass La classe à valider
+     * @throws IllegalArgumentException si la classe est null
+     */
+    private static <T> void validateServiceClass(Class<T> serviceClass)
+    {
+        if (serviceClass == null)
+        {
+            throw new IllegalArgumentException("Service class cannot be null");
+        }
+    }
+
+    /**
+     * Essaie de charger le service en utilisant différents ClassLoaders.
+     * @param serviceClass La classe du service à charger
+     * @param <T> Le type du service
+     * @return Une instance du service ou null si aucune implémentation n'est trouvée
+     */
+    private static <T> T tryLoadWithClassLoaders(Class<T> serviceClass)
     {
         T serviceInstance = loadServiceClass(serviceClass, Thread.currentThread().getContextClassLoader());
         if (serviceInstance == null)
@@ -312,11 +345,6 @@ public final class ServiceLoaderUtils
         if (serviceInstance == null)
         {
             serviceInstance = loadByReflection(serviceClass, ServiceLoaderUtils.class.getClassLoader());
-        }
-        if (serviceInstance == null)
-        {
-            String errorMessage = String.format(ERROR_NO_IMPLEMENTATION, serviceClass.getSimpleName());
-            serviceInstance = createProxyInstance(serviceClass, errorMessage);
         }
         return serviceInstance;
     }
@@ -335,6 +363,18 @@ public final class ServiceLoaderUtils
         {
             implementations.add(implementation);
         }
+        return handleImplementations(serviceClass, implementations);
+    }
+
+    /**
+     * Gère la liste des implémentations trouvées.
+     * @param serviceClass La classe du service
+     * @param implementations La liste des implémentations trouvées
+     * @param <T> Le type du service
+     * @return Une instance du service ou un proxy qui lève une exception
+     */
+    private static <T> T handleImplementations(Class<T> serviceClass, List<T> implementations)
+    {
         if (implementations.isEmpty())
         {
             return null;
@@ -345,7 +385,8 @@ public final class ServiceLoaderUtils
                     .map(T::getClass)
                     .map(Class::getSimpleName)
                     .collect(Collectors.joining(", "));
-            String errorMessage = String.format(ERROR_MULTIPLE_IMPLEMENTATIONS, serviceClass.getSimpleName(), implementationsList);
+            String errorMessage = String.format(ERROR_MULTIPLE_IMPLEMENTATIONS, 
+                serviceClass.getSimpleName(), implementationsList);
             return createProxyInstance(serviceClass, errorMessage);
         }
         return implementations.get(0);
@@ -361,32 +402,36 @@ public final class ServiceLoaderUtils
     private static <T> T loadByReflection(Class<T> serviceClass, ClassLoader classLoader)
     {
         String implementationClassName = FACTORY_IMPLEMENTATIONS.get(serviceClass.getName());
+        if (implementationClassName == null)
+        {
+            return null;
+        }
         try
         {
-            Class<T> implementationClass = (Class<T>) Class.forName(implementationClassName, true, classLoader);
-            return implementationClass.newInstance();
+            Class<?> implementationClass = Class.forName(implementationClassName, true, classLoader);
+            return serviceClass.cast(implementationClass.getConstructor().newInstance());
         }
         catch (Exception e)
         {
-            // ignore
+            return null;
         }
-        return null;
     }
 
     /**
      * Crée une instance de proxy qui lève une exception avec le message spécifié.
      * @param serviceClass La classe du service
-     * @param errorMessage Le message d'erreur à afficher
+     * @param errorMessage Le message d'erreur
      * @param <T> Le type du service
      * @return Une instance de proxy
      */
     private static <T> T createProxyInstance(Class<T> serviceClass, String errorMessage)
     {
-        InvocationHandler handler = new ThrowingInvocationHandler(errorMessage);
-        Object proxyInstance = Proxy.newProxyInstance(
-                serviceClass.getClassLoader(),
-                new Class[]{serviceClass},
-                handler);
-        return serviceClass.cast(proxyInstance);
+        InvocationHandler handler = (proxy, method, args) -> {
+            throw new IllegalStateException(errorMessage);
+        };
+        return serviceClass.cast(Proxy.newProxyInstance(
+            serviceClass.getClassLoader(),
+            new Class<?>[] { serviceClass },
+            handler));
     }
 }
