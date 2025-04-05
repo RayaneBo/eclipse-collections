@@ -15,16 +15,32 @@ import java.io.Serializable;
 /**
  * A Predicate is a lambda or closure with a boolean result. The method accept should be implemented to indicate the object
  * passed to the method meets the criteria of this Predicate. A Predicate is also known as a Discriminator or Filter.
+ * 
+ * @param <T> the type of the input to the predicate
+ * @since 1.0
  */
 @FunctionalInterface
 public interface Predicate<T>
         extends java.util.function.Predicate<T>, Serializable
 {
-    boolean accept(T each);
+    /**
+     * Evaluates this predicate on the given argument.
+     *
+     * @param element the input argument
+     * @return true if the input argument matches the predicate, otherwise false
+     */
+    boolean accept(T element);
 
+    /**
+     * Evaluates this predicate on the given argument. This method is provided for compatibility
+     * with {@link java.util.function.Predicate}.
+     *
+     * @param element the input argument
+     * @return true if the input argument matches the predicate, otherwise false
+     */
     @Override
-    default boolean test(T each)
+    default boolean test(T element)
     {
-        return this.accept(each);
+        return this.accept(element);
     }
 }
