@@ -11,6 +11,7 @@
 package org.eclipse.collections.api.factory;
 
 import org.eclipse.collections.api.factory.bag.ImmutableBagFactory;
+import org.eclipse.collections.api.factory.bag.MutableBagFactory;
 import org.eclipse.collections.api.factory.bag.MultiReaderBagFactory;
 import org.eclipse.collections.api.factory.bag.MutableBagFactory;
 
