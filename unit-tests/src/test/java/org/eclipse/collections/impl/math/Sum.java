@@ -18,18 +18,53 @@ import java.io.Serializable;
  * @deprecated Don't use in new tests
  */
 @Deprecated
-public interface Sum
-        extends Serializable
+public interface Sum extends Serializable
 {
-    Sum add(Object number);
-
-    Sum add(Number number);
-
-    Sum add(Sum otherSum);
-
-    Sum add(int value);
-
+    /**
+     * Récupère la valeur actuelle de la somme.
+     *
+     * @return la valeur actuelle de la somme
+     */
     Number getValue();
 
+    /**
+     * Crée une nouvelle instance de la même implémentation avec une valeur initiale de zéro.
+     *
+     * @return une nouvelle instance de la somme
+     */
     Sum speciesNew();
+
+    /**
+     * Ajoute une valeur entière à la somme.
+     *
+     * @param value la valeur entière à ajouter
+     * @return cette somme après l'ajout
+     */
+    Sum add(int value);
+
+    /**
+     * Ajoute un nombre à la somme.
+     *
+     * @param number le nombre à ajouter
+     * @return cette somme après l'ajout
+     */
+    Sum add(Number number);
+
+    /**
+     * Ajoute une autre somme à cette somme.
+     *
+     * @param otherSum l'autre somme à ajouter
+     * @return cette somme après l'ajout
+     */
+    Sum add(Sum otherSum);
+
+    /**
+     * Ajoute un objet à la somme.
+     * L'objet doit être convertible en nombre.
+     *
+     * @param object l'objet à ajouter
+     * @return cette somme après l'ajout
+     * @throws ClassCastException si l'objet ne peut pas être converti en nombre
+     */
+    Sum add(Object object);
 }
