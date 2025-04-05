@@ -33,8 +33,10 @@ import org.eclipse.collections.api.block.predicate.Predicate;
 import org.eclipse.collections.api.block.predicate.Predicate2;
 import org.eclipse.collections.api.block.predicate.primitive.IntPredicate;
 import org.eclipse.collections.api.block.procedure.Procedure;
+import org.eclipse.collections.api.collection.ImmutableCollection;
 import org.eclipse.collections.api.factory.Sets;
 import org.eclipse.collections.api.list.ImmutableList;
+import org.eclipse.collections.api.map.ImmutableMap;
 import org.eclipse.collections.api.multimap.bag.ImmutableBagMultimap;
 import org.eclipse.collections.api.ordered.OrderedIterable;
 import org.eclipse.collections.api.partition.bag.PartitionImmutableBag;
@@ -44,21 +46,17 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.api.tuple.primitive.ObjectIntPair;
 
 /**
+ * Une ImmutableBag est une Collection dont les éléments sont non ordonnés et peuvent contenir des entrées en double.
+ * Elle diffère de ImmutableCollection en ce qu'elle ajoute un protocole pour déterminer le nombre d'occurrences d'un élément.
+ * Une ImmutableBag ne peut pas être modifiée après sa création.
+ *
  * @since 1.0
  */
-public interface ImmutableBag<T> extends UnsortedBag<T>, ImmutableBagIterable<T>
+public interface ImmutableBag<T>
+        extends Bag<T>, ImmutableCollection<T>
 {
     @Override
-    ImmutableBag<T> newWith(T element);
-
-    @Override
-    ImmutableBag<T> newWithout(T element);
-
-    @Override
-    ImmutableBag<T> newWithAll(Iterable<? extends T> elements);
-
-    @Override
-    ImmutableBag<T> newWithoutAll(Iterable<? extends T> elements);
+    ImmutableMap<T, Integer> toMapOfItemToCount();
 
     @Override
     ImmutableBag<T> selectByOccurrences(IntPredicate predicate);
@@ -109,6 +107,65 @@ public interface ImmutableBag<T> extends UnsortedBag<T>, ImmutableBagIterable<T>
 
     @Override
     <P> PartitionImmutableBag<T> partitionWith(Predicate2<? super T, ? super P> predicate, P parameter);
+
+    @Override
+    <V> ImmutableBagMultimap<V, T> groupBy(Function<? super T, ? extends V> function);
+
+    @Override
+    <V> ImmutableBagMultimap<V, T> groupByEach(Function<? super T, ? extends Iterable<V>> function);
+
+    @Override
+    ImmutableSet<Pair<T, Integer>> zipWithIndex();
+
+    /**
+     * Retourne une nouvelle ImmutableBag avec l'élément ajouté.
+     *
+     * @param element l'élément à ajouter
+     * @return une nouvelle ImmutableBag avec l'élément ajouté
+     */
+    ImmutableBag<T> newWith(T element);
+
+    /**
+     * Retourne une nouvelle ImmutableBag avec l'élément supprimé.
+     *
+     * @param element l'élément à supprimer
+     * @return une nouvelle ImmutableBag avec l'élément supprimé
+     */
+    ImmutableBag<T> newWithout(T element);
+
+    /**
+     * Retourne une nouvelle ImmutableBag avec tous les éléments ajoutés.
+     *
+     * @param elements les éléments à ajouter
+     * @return une nouvelle ImmutableBag avec tous les éléments ajoutés
+     */
+    ImmutableBag<T> newWithAll(Iterable<? extends T> elements);
+
+    /**
+     * Retourne une nouvelle ImmutableBag avec tous les éléments supprimés.
+     *
+     * @param elements les éléments à supprimer
+     * @return une nouvelle ImmutableBag avec tous les éléments supprimés
+     */
+    ImmutableBag<T> newWithoutAll(Iterable<? extends T> elements);
+
+    /**
+     * Retourne une nouvelle ImmutableBag avec le nombre d'occurrences de l'élément modifié.
+     *
+     * @param element l'élément dont le nombre d'occurrences doit être modifié
+     * @param occurrences le nouveau nombre d'occurrences
+     * @return une nouvelle ImmutableBag avec le nombre d'occurrences modifié
+     */
+    ImmutableBag<T> newWithOccurrences(T element, int occurrences);
+
+    /**
+     * Retourne une nouvelle ImmutableBag avec le nombre d'occurrences de l'élément supprimé.
+     *
+     * @param element l'élément dont les occurrences doivent être supprimées
+     * @param occurrences le nombre d'occurrences à supprimer
+     * @return une nouvelle ImmutableBag avec les occurrences supprimées
+     */
+    ImmutableBag<T> newWithoutOccurrences(T element, int occurrences);
 
     @Override
     <S> ImmutableBag<S> selectInstancesOf(Class<S> clazz);
@@ -188,25 +245,12 @@ public interface ImmutableBag<T> extends UnsortedBag<T>, ImmutableBagIterable<T>
         return this.flatCollect(function);
     }
 
-    @Override
-    <V> ImmutableBagMultimap<V, T> groupBy(Function<? super T, ? extends V> function);
-
-    @Override
-    <V> ImmutableBagMultimap<V, T> groupByEach(Function<? super T, ? extends Iterable<V>> function);
-
     /**
      * @deprecated in 6.0. Use {@link OrderedIterable#zip(Iterable)} instead.
      */
     @Override
     @Deprecated
     <S> ImmutableBag<Pair<T, S>> zip(Iterable<S> that);
-
-    /**
-     * @deprecated in 6.0. Use {@link OrderedIterable#zipWithIndex()} instead.
-     */
-    @Override
-    @Deprecated
-    ImmutableSet<Pair<T, Integer>> zipWithIndex();
 
     /**
      * @since 6.0

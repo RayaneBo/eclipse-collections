@@ -301,4 +301,31 @@ public interface MutableBag<T>
     {
         return this.toImmutable();
     }
+
+    /**
+     * Ajoute le nombre spécifié d'occurrences de l'élément à ce bag.
+     *
+     * @param item l'élément à ajouter
+     * @param occurrences le nombre d'occurrences à ajouter
+     * @return true si le bag a été modifié
+     */
+    boolean addOccurrences(T item, int occurrences);
+
+    /**
+     * Supprime le nombre spécifié d'occurrences de l'élément de ce bag.
+     *
+     * @param item l'élément à supprimer
+     * @param occurrences le nombre d'occurrences à supprimer
+     * @return true si le bag a été modifié
+     */
+    boolean removeOccurrences(Object item, int occurrences);
+
+    /**
+     * Définit le nombre d'occurrences de l'élément à la valeur spécifiée.
+     *
+     * @param item l'élément dont le nombre d'occurrences doit être défini
+     * @param count le nouveau nombre d'occurrences
+     * @return true si le bag a été modifié
+     */
+    boolean setOccurrences(T item, int count);
 }

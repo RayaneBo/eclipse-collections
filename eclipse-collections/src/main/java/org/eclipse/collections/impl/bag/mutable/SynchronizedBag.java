@@ -13,6 +13,10 @@ package org.eclipse.collections.impl.bag.mutable;
 import java.io.Serializable;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.bag.ImmutableBag;
@@ -68,14 +72,17 @@ public class SynchronizedBag<T>
 {
     private static final long serialVersionUID = 2L;
 
-    SynchronizedBag(MutableBag<T> bag)
+    private final Lock lock;
+
+    public SynchronizedBag(MutableBag<T> bag)
     {
-        super(bag);
+        this(bag, new ReentrantLock());
     }
 
-    public SynchronizedBag(MutableBag<T> bag, Object newLock)
+    public SynchronizedBag(MutableBag<T> bag, Lock lock)
     {
-        super(bag, newLock);
+        super(bag);
+        this.lock = lock;
     }
 
     /**
@@ -90,7 +97,7 @@ public class SynchronizedBag<T>
      * This method will take a MutableBag and wrap it directly in a SynchronizedBag. Additionally,
      * a developer specifies which lock to use with the collection.
      */
-    public static <E, B extends MutableBag<E>> SynchronizedBag<E> of(B bag, Object lock)
+    public static <E, B extends MutableBag<E>> SynchronizedBag<E> of(B bag, Lock lock)
     {
         return new SynchronizedBag<>(bag, lock);
     }
@@ -104,9 +111,14 @@ public class SynchronizedBag<T>
     @Override
     public MutableBag<T> newEmpty()
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().newEmpty().asSynchronized();
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
@@ -118,117 +130,182 @@ public class SynchronizedBag<T>
     @Override
     public int addOccurrences(T item, int occurrences)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().addOccurrences(item, occurrences);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public boolean removeOccurrences(Object item, int occurrences)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().removeOccurrences(item, occurrences);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public boolean setOccurrences(T item, int occurrences)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().setOccurrences(item, occurrences);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public MutableMap<T, Integer> toMapOfItemToCount()
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().toMapOfItemToCount();
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public MutableBag<T> selectByOccurrences(IntPredicate predicate)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().selectByOccurrences(predicate);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public MutableList<ObjectIntPair<T>> topOccurrences(int count)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().topOccurrences(count);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public MutableList<ObjectIntPair<T>> bottomOccurrences(int count)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().bottomOccurrences(count);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public boolean anySatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().anySatisfyWithOccurrences(predicate);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public boolean allSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().allSatisfyWithOccurrences(predicate);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public boolean noneSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().noneSatisfyWithOccurrences(predicate);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public T detectWithOccurrences(ObjectIntPredicate<? super T> predicate)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().detectWithOccurrences(predicate);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public void forEachWithOccurrences(ObjectIntProcedure<? super T> objectIntProcedure)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             this.getDelegate().forEachWithOccurrences(objectIntProcedure);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public <V> MutableBag<V> collectWithOccurrences(ObjectIntToObjectFunction<? super T, ? extends V> function)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().collectWithOccurrences(function);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
@@ -238,36 +315,56 @@ public class SynchronizedBag<T>
     @Override
     public <V, R extends Collection<V>> R collectWithOccurrences(ObjectIntToObjectFunction<? super T, ? extends V> function, R target)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().collectWithOccurrences(function, target);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public int occurrencesOf(Object item)
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().occurrencesOf(item);
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public int sizeDistinct()
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().sizeDistinct();
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public String toStringOfItemToCount()
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().toStringOfItemToCount();
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
@@ -428,10 +525,7 @@ public class SynchronizedBag<T>
     @Override
     public MutableBag<T> asUnmodifiable()
     {
-        synchronized (this.getLock())
-        {
-            return UnmodifiableBag.of(this);
-        }
+        return new UnmodifiableBag<>(this);
     }
 
     @Override
@@ -449,18 +543,354 @@ public class SynchronizedBag<T>
     @Override
     public MutableSet<T> selectUnique()
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return this.getDelegate().selectUnique();
+        }
+        finally
+        {
+            this.lock.unlock();
         }
     }
 
     @Override
     public RichIterable<T> distinctView()
     {
-        synchronized (this.getLock())
+        this.lock.lock();
+        try
         {
             return SynchronizedRichIterable.of(this.getDelegate().distinctView(), this.lock);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public Iterator<T> iterator()
+    {
+        return new SynchronizedIterator<>(this.getDelegate().iterator(), this.lock);
+    }
+
+    @Override
+    public int size()
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().size();
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean isEmpty()
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().isEmpty();
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean contains(Object o)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().contains(o);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public Object[] toArray()
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().toArray();
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public <T> T[] toArray(T[] a)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().toArray(a);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean add(T t)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().add(t);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean remove(Object o)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().remove(o);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean containsAll(Collection<?> c)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().containsAll(c);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends T> c)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().addAll(c);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().removeAll(c);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().retainAll(c);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public void clear()
+    {
+        this.lock.lock();
+        try
+        {
+            this.getDelegate().clear();
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public Set<T> toSet()
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().toSet();
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public MutableBag<T> with(T element)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().with(element);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public MutableBag<T> without(T element)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().without(element);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public MutableBag<T> withAll(Iterable<? extends T> elements)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().withAll(elements);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public MutableBag<T> withoutAll(Iterable<? extends T> elements)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().withoutAll(elements);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public MutableBag<T> withOccurrences(T element, int occurrences)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().withOccurrences(element, occurrences);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    @Override
+    public MutableBag<T> withoutOccurrences(T element, int occurrences)
+    {
+        this.lock.lock();
+        try
+        {
+            return this.getDelegate().withoutOccurrences(element, occurrences);
+        }
+        finally
+        {
+            this.lock.unlock();
+        }
+    }
+
+    private static class SynchronizedIterator<T> implements Iterator<T>
+    {
+        private final Iterator<T> delegate;
+        private final Lock lock;
+
+        private SynchronizedIterator(Iterator<T> delegate, Lock lock)
+        {
+            this.delegate = delegate;
+            this.lock = lock;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            this.lock.lock();
+            try
+            {
+                return this.delegate.hasNext();
+            }
+            finally
+            {
+                this.lock.unlock();
+            }
+        }
+
+        @Override
+        public T next()
+        {
+            this.lock.lock();
+            try
+            {
+                return this.delegate.next();
+            }
+            finally
+            {
+                this.lock.unlock();
+            }
+        }
+
+        @Override
+        public void remove()
+        {
+            this.lock.lock();
+            try
+            {
+                this.delegate.remove();
+            }
+            finally
+            {
+                this.lock.unlock();
+            }
         }
     }
 }

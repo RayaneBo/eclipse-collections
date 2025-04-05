@@ -16,6 +16,8 @@ import java.io.ObjectInput;
 import java.io.ObjectOutput;
 import java.io.Serializable;
 import java.util.Collection;
+import java.util.Iterator;
+import java.util.Set;
 
 import org.eclipse.collections.api.RichIterable;
 import org.eclipse.collections.api.bag.ImmutableBag;
@@ -59,18 +61,18 @@ import org.eclipse.collections.api.tuple.primitive.ObjectIntPair;
 import org.eclipse.collections.impl.collection.mutable.AbstractUnmodifiableMutableCollection;
 
 /**
- * An unmodifiable view of a bag.
- *
- * @see MutableBag#asUnmodifiable()
- * @since 1.0
+ * Une implémentation immuable de MutableBag qui utilise le pattern Decorator.
+ * Toutes les opérations de modification lèvent une UnsupportedOperationException.
  */
 public class UnmodifiableBag<T>
-        extends AbstractUnmodifiableMutableCollection<T>
+        extends BagDecorator<T>
         implements MutableBag<T>, Serializable
 {
-    UnmodifiableBag(MutableBag<? extends T> mutableBag)
+    private static final long serialVersionUID = 1L;
+
+    public UnmodifiableBag(MutableBag<T> delegate)
     {
-        super(mutableBag);
+        super(delegate);
     }
 
     /**
@@ -85,11 +87,6 @@ public class UnmodifiableBag<T>
         return new UnmodifiableBag<>(bag);
     }
 
-    protected MutableBag<T> getMutableBag()
-    {
-        return (MutableBag<T>) this.getMutableCollection();
-    }
-
     @Override
     public MutableBag<T> asUnmodifiable()
     {
@@ -99,7 +96,7 @@ public class UnmodifiableBag<T>
     @Override
     public MutableBag<T> asSynchronized()
     {
-        return SynchronizedBag.of(this);
+        return new SynchronizedBag<>(this);
     }
 
     @Override
@@ -111,31 +108,31 @@ public class UnmodifiableBag<T>
     @Override
     public boolean equals(Object obj)
     {
-        return this.getMutableBag().equals(obj);
+        return this.delegate.equals(obj);
     }
 
     @Override
     public int hashCode()
     {
-        return this.getMutableBag().hashCode();
+        return this.delegate.hashCode();
     }
 
     @Override
     public String toStringOfItemToCount()
     {
-        return this.getMutableBag().toStringOfItemToCount();
+        return this.delegate.toStringOfItemToCount();
     }
 
     @Override
     public MutableBag<T> newEmpty()
     {
-        return this.getMutableBag().newEmpty();
+        return this.delegate.newEmpty();
     }
 
     @Override
     public MutableBag<T> selectByOccurrences(IntPredicate predicate)
     {
-        return this.getMutableBag().selectByOccurrences(predicate);
+        return this.delegate.selectByOccurrences(predicate);
     }
 
     @Override
@@ -148,127 +145,127 @@ public class UnmodifiableBag<T>
     @Override
     public MutableBag<T> select(Predicate<? super T> predicate)
     {
-        return this.getMutableBag().select(predicate);
+        return this.delegate.select(predicate);
     }
 
     @Override
     public <P> MutableBag<T> selectWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
-        return this.getMutableBag().selectWith(predicate, parameter);
+        return this.delegate.selectWith(predicate, parameter);
     }
 
     @Override
     public MutableBag<T> reject(Predicate<? super T> predicate)
     {
-        return this.getMutableBag().reject(predicate);
+        return this.delegate.reject(predicate);
     }
 
     @Override
     public <P> MutableBag<T> rejectWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
-        return this.getMutableBag().rejectWith(predicate, parameter);
+        return this.delegate.rejectWith(predicate, parameter);
     }
 
     @Override
     public PartitionMutableBag<T> partition(Predicate<? super T> predicate)
     {
-        return this.getMutableBag().partition(predicate);
+        return this.delegate.partition(predicate);
     }
 
     @Override
     public <P> PartitionMutableBag<T> partitionWith(Predicate2<? super T, ? super P> predicate, P parameter)
     {
-        return this.getMutableBag().partitionWith(predicate, parameter);
+        return this.delegate.partitionWith(predicate, parameter);
     }
 
     @Override
     public <S> MutableBag<S> selectInstancesOf(Class<S> clazz)
     {
-        return this.getMutableBag().selectInstancesOf(clazz);
+        return this.delegate.selectInstancesOf(clazz);
     }
 
     @Override
     public <V> MutableBag<V> collect(Function<? super T, ? extends V> function)
     {
-        return this.getMutableBag().collect(function);
+        return this.delegate.collect(function);
     }
 
     @Override
     public MutableBooleanBag collectBoolean(BooleanFunction<? super T> booleanFunction)
     {
-        return this.getMutableBag().collectBoolean(booleanFunction);
+        return this.delegate.collectBoolean(booleanFunction);
     }
 
     @Override
     public MutableByteBag collectByte(ByteFunction<? super T> byteFunction)
     {
-        return this.getMutableBag().collectByte(byteFunction);
+        return this.delegate.collectByte(byteFunction);
     }
 
     @Override
     public MutableCharBag collectChar(CharFunction<? super T> charFunction)
     {
-        return this.getMutableBag().collectChar(charFunction);
+        return this.delegate.collectChar(charFunction);
     }
 
     @Override
     public MutableDoubleBag collectDouble(DoubleFunction<? super T> doubleFunction)
     {
-        return this.getMutableBag().collectDouble(doubleFunction);
+        return this.delegate.collectDouble(doubleFunction);
     }
 
     @Override
     public MutableFloatBag collectFloat(FloatFunction<? super T> floatFunction)
     {
-        return this.getMutableBag().collectFloat(floatFunction);
+        return this.delegate.collectFloat(floatFunction);
     }
 
     @Override
     public MutableIntBag collectInt(IntFunction<? super T> intFunction)
     {
-        return this.getMutableBag().collectInt(intFunction);
+        return this.delegate.collectInt(intFunction);
     }
 
     @Override
     public MutableLongBag collectLong(LongFunction<? super T> longFunction)
     {
-        return this.getMutableBag().collectLong(longFunction);
+        return this.delegate.collectLong(longFunction);
     }
 
     @Override
     public MutableShortBag collectShort(ShortFunction<? super T> shortFunction)
     {
-        return this.getMutableBag().collectShort(shortFunction);
+        return this.delegate.collectShort(shortFunction);
     }
 
     @Override
     public <V> MutableBag<V> flatCollect(Function<? super T, ? extends Iterable<V>> function)
     {
-        return this.getMutableBag().flatCollect(function);
+        return this.delegate.flatCollect(function);
     }
 
     @Override
     public MutableList<ObjectIntPair<T>> topOccurrences(int count)
     {
-        return this.getMutableBag().topOccurrences(count);
+        return this.delegate.topOccurrences(count);
     }
 
     @Override
     public MutableList<ObjectIntPair<T>> bottomOccurrences(int count)
     {
-        return this.getMutableBag().bottomOccurrences(count);
+        return this.delegate.bottomOccurrences(count);
     }
 
     @Override
     public <V> MutableBag<V> collectWithOccurrences(ObjectIntToObjectFunction<? super T, ? extends V> function)
     {
-        return this.getMutableBag().collectWithOccurrences(function, Bags.mutable.empty());
+        return this.delegate.collectWithOccurrences(function, Bags.mutable.empty());
     }
 
     @Override
     public <P, A> MutableBag<A> collectWith(Function2<? super T, ? super P, ? extends A> function, P parameter)
     {
-        return this.getMutableBag().collectWith(function, parameter);
+        return this.delegate.collectWith(function, parameter);
     }
 
     @Override
@@ -276,79 +273,61 @@ public class UnmodifiableBag<T>
             Predicate<? super T> predicate,
             Function<? super T, ? extends V> function)
     {
-        return this.getMutableBag().collectIf(predicate, function);
+        return this.delegate.collectIf(predicate, function);
     }
 
     @Override
     public <V> MutableBagMultimap<V, T> groupBy(Function<? super T, ? extends V> function)
     {
-        return this.getMutableBag().groupBy(function);
+        return this.delegate.groupBy(function);
     }
 
     @Override
     public <V> MutableBagMultimap<V, T> groupByEach(Function<? super T, ? extends Iterable<V>> function)
     {
-        return this.getMutableBag().groupByEach(function);
-    }
-
-    @Override
-    public int addOccurrences(T item, int occurrences)
-    {
-        throw new UnsupportedOperationException("Cannot call addOccurrences() on " + this.getClass().getSimpleName());
-    }
-
-    @Override
-    public boolean removeOccurrences(Object item, int occurrences)
-    {
-        throw new UnsupportedOperationException("Cannot call removeOccurrences() on " + this.getClass().getSimpleName());
-    }
-
-    @Override
-    public boolean setOccurrences(T item, int occurrences)
-    {
-        throw new UnsupportedOperationException("Cannot call setOccurrences() on " + this.getClass().getSimpleName());
+        return this.delegate.groupByEach(function);
     }
 
     @Override
     public int sizeDistinct()
     {
-        return this.getMutableBag().sizeDistinct();
+        return this.delegate.sizeDistinct();
     }
 
     @Override
     public int occurrencesOf(Object item)
     {
-        return this.getMutableBag().occurrencesOf(item);
+        return this.delegate.occurrencesOf(item);
     }
 
     @Override
     public void forEachWithOccurrences(ObjectIntProcedure<? super T> objectIntProcedure)
     {
-        this.getMutableBag().forEachWithOccurrences(objectIntProcedure);
+        this.delegate.forEachWithOccurrences(objectIntProcedure);
     }
 
     @Override
     public boolean anySatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
     {
-        return this.getMutableBag().anySatisfyWithOccurrences(predicate);
+        return this.delegate.anySatisfyWithOccurrences(predicate);
     }
 
     @Override
     public boolean allSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
     {
-        return this.getMutableBag().allSatisfyWithOccurrences(predicate);
+        return this.delegate.allSatisfyWithOccurrences(predicate);
     }
 
     @Override
     public boolean noneSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
     {
-        return this.getMutableBag().noneSatisfyWithOccurrences(predicate);
+        return this.delegate.noneSatisfyWithOccurrences(predicate);
     }
 
     @Override
     public T detectWithOccurrences(ObjectIntPredicate<? super T> predicate)
     {
-        return this.getMutableBag().detectWithOccurrences(predicate);
+        return this.delegate.detectWithOccurrences(predicate);
     }
 
     /**
@@ -357,13 +336,13 @@ public class UnmodifiableBag<T>
     @Override
     public <V, R extends Collection<V>> R collectWithOccurrences(ObjectIntToObjectFunction<? super T, ? extends V> function, R target)
     {
-        return this.getMutableBag().collectWithOccurrences(function, target);
+        return this.delegate.collectWithOccurrences(function, target);
     }
 
     @Override
     public MutableMap<T, Integer> toMapOfItemToCount()
     {
-        return this.getMutableBag().toMapOfItemToCount();
+        return this.delegate.toMapOfItemToCount();
     }
 
     /**
@@ -373,7 +352,7 @@ public class UnmodifiableBag<T>
     @Override
     public <S> MutableBag<Pair<T, S>> zip(Iterable<S> that)
     {
-        return this.getMutableBag().zip(that);
+        return this.delegate.zip(that);
     }
 
     /**
@@ -383,55 +362,55 @@ public class UnmodifiableBag<T>
     @Override
     public MutableSet<Pair<T, Integer>> zipWithIndex()
     {
-        return this.getMutableBag().zipWithIndex();
+        return this.delegate.zipWithIndex();
     }
 
     @Override
     public MutableBag<T> with(T element)
     {
-        throw new UnsupportedOperationException("Cannot call with() on " + this.getClass().getSimpleName());
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
     }
 
     @Override
     public MutableBag<T> without(T element)
     {
-        throw new UnsupportedOperationException("Cannot call without() on " + this.getClass().getSimpleName());
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
     }
 
     @Override
     public MutableBag<T> withOccurrences(T element, int occurrences)
     {
-        throw new UnsupportedOperationException("Cannot call withOccurrences() on " + this.getClass().getSimpleName());
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
     }
 
     @Override
     public MutableBag<T> withoutOccurrences(T element, int occurrences)
     {
-        throw new UnsupportedOperationException("Cannot call withoutOccurrences() on " + this.getClass().getSimpleName());
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
     }
 
     @Override
     public MutableBag<T> withAll(Iterable<? extends T> elements)
     {
-        throw new UnsupportedOperationException("Cannot call withAll() on " + this.getClass().getSimpleName());
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
     }
 
     @Override
     public MutableBag<T> withoutAll(Iterable<? extends T> elements)
     {
-        throw new UnsupportedOperationException("Cannot call withoutAll() on " + this.getClass().getSimpleName());
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
     }
 
     protected Object writeReplace()
     {
-        return new UnmodifiableBagSerializationProxy<>(this.getMutableBag());
+        return new UnmodifiableBagSerializationProxy<>(this.delegate);
     }
 
     private static class UnmodifiableBagSerializationProxy<T> implements Externalizable
     {
         private static final long serialVersionUID = 1L;
 
-        private MutableBag<T> mutableBag;
+        private MutableBag<T> delegate;
 
         public UnmodifiableBagSerializationProxy()
         {
@@ -440,7 +419,7 @@ public class UnmodifiableBag<T>
 
         private UnmodifiableBagSerializationProxy(MutableBag<T> bag)
         {
-            this.mutableBag = bag;
+            this.delegate = bag;
         }
 
         @Override
@@ -448,7 +427,7 @@ public class UnmodifiableBag<T>
         {
             try
             {
-                out.writeObject(this.mutableBag);
+                out.writeObject(this.delegate);
             }
             catch (RuntimeException e)
             {
@@ -463,19 +442,19 @@ public class UnmodifiableBag<T>
         @Override
         public void readExternal(ObjectInput in) throws IOException, ClassNotFoundException
         {
-            this.mutableBag = (MutableBag<T>) in.readObject();
+            this.delegate = (MutableBag<T>) in.readObject();
         }
 
         protected Object readResolve()
         {
-            return this.mutableBag.asUnmodifiable();
+            return this.delegate.asUnmodifiable();
         }
     }
 
     @Override
     public MutableSet<T> selectUnique()
     {
-        return this.getMutableBag().selectUnique();
+        return this.delegate.selectUnique();
     }
 
     @Override
@@ -501,6 +480,76 @@ public class UnmodifiableBag<T>
     @Override
     public RichIterable<T> distinctView()
     {
-        return this.getMutableBag().distinctView();
+        return this.delegate.distinctView();
+    }
+
+    @Override
+    public Iterator<T> iterator()
+    {
+        return new UnmodifiableIterator<>(this.delegate.iterator());
+    }
+
+    @Override
+    public boolean add(T t)
+    {
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
+    }
+
+    @Override
+    public boolean remove(Object o)
+    {
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
+    }
+
+    @Override
+    public boolean addAll(Collection<? extends T> c)
+    {
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
+    }
+
+    @Override
+    public boolean removeAll(Collection<?> c)
+    {
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
+    }
+
+    @Override
+    public boolean retainAll(Collection<?> c)
+    {
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
+    }
+
+    @Override
+    public void clear()
+    {
+        throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
+    }
+
+    private static class UnmodifiableIterator<T> implements Iterator<T>
+    {
+        private final Iterator<T> delegate;
+
+        private UnmodifiableIterator(Iterator<T> delegate)
+        {
+            this.delegate = delegate;
+        }
+
+        @Override
+        public boolean hasNext()
+        {
+            return this.delegate.hasNext();
+        }
+
+        @Override
+        public T next()
+        {
+            return this.delegate.next();
+        }
+
+        @Override
+        public void remove()
+        {
+            throw new UnsupportedOperationException("Cannot modify an unmodifiable bag");
+        }
     }
 }

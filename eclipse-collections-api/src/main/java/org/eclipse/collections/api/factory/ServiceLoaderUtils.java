@@ -19,6 +19,10 @@ import java.util.Map;
 import java.util.ServiceLoader;
 import java.util.stream.Collectors;
 
+/**
+ * Classe utilitaire pour le chargement des services.
+ * Cette classe utilise une stratégie de chargement configurable.
+ */
 public final class ServiceLoaderUtils
 {
     // Messages d'erreur
@@ -287,151 +291,42 @@ public final class ServiceLoaderUtils
         FACTORY_IMPLEMENTATIONS.put("org.eclipse.collections.api.factory.stack.primitive.MutableShortStackFactory", "org.eclipse.collections.impl.stack.mutable.primitive.MutableShortStackFactoryImpl");
     }
 
+    private static final ServiceLoaderStrategy<?> DEFAULT_STRATEGY = new DefaultServiceLoaderStrategy<>();
+
     private ServiceLoaderUtils()
     {
         throw new AssertionError("Suppress default constructor for noninstantiability");
     }
 
     /**
-     * Charge une implémentation de service en utilisant le ServiceLoader.
+     * Charge une implémentation de service en utilisant la stratégie par défaut.
+     *
      * @param serviceClass La classe du service à charger
      * @param <T> Le type du service
-     * @return Une instance du service ou un proxy qui lève une exception
+     * @return Une instance du service
      * @throws IllegalArgumentException si la classe de service est null
      */
+    @SuppressWarnings("unchecked")
     public static <T> T loadServiceClass(Class<T> serviceClass)
     {
-        validateServiceClass(serviceClass);
-        
-        T serviceInstance = tryLoadWithClassLoaders(serviceClass);
-        if (serviceInstance == null)
-        {
-            serviceInstance = createProxyInstance(serviceClass, 
-                String.format(ERROR_NO_IMPLEMENTATION, serviceClass.getSimpleName()));
-        }
-        return serviceInstance;
+        return ((ServiceLoaderStrategy<T>) DEFAULT_STRATEGY).loadServiceClass(serviceClass);
     }
 
     /**
-     * Valide que la classe de service n'est pas null.
-     * @param serviceClass La classe à valider
-     * @throws IllegalArgumentException si la classe est null
-     */
-    private static <T> void validateServiceClass(Class<T> serviceClass)
-    {
-        if (serviceClass == null)
-        {
-            throw new IllegalArgumentException("Service class cannot be null");
-        }
-    }
-
-    /**
-     * Essaie de charger le service en utilisant différents ClassLoaders.
+     * Charge une implémentation de service en utilisant une stratégie personnalisée.
+     *
      * @param serviceClass La classe du service à charger
+     * @param strategy La stratégie de chargement à utiliser
      * @param <T> Le type du service
-     * @return Une instance du service ou null si aucune implémentation n'est trouvée
+     * @return Une instance du service
+     * @throws IllegalArgumentException si la classe de service ou la stratégie est null
      */
-    private static <T> T tryLoadWithClassLoaders(Class<T> serviceClass)
+    public static <T> T loadServiceClass(Class<T> serviceClass, ServiceLoaderStrategy<T> strategy)
     {
-        T serviceInstance = loadServiceClass(serviceClass, Thread.currentThread().getContextClassLoader());
-        if (serviceInstance == null)
+        if (strategy == null)
         {
-            serviceInstance = loadServiceClass(serviceClass, ServiceLoaderUtils.class.getClassLoader());
+            throw new IllegalArgumentException("Strategy cannot be null");
         }
-        if (serviceInstance == null)
-        {
-            serviceInstance = loadByReflection(serviceClass, Thread.currentThread().getContextClassLoader());
-        }
-        if (serviceInstance == null)
-        {
-            serviceInstance = loadByReflection(serviceClass, ServiceLoaderUtils.class.getClassLoader());
-        }
-        return serviceInstance;
-    }
-
-    /**
-     * Charge une implémentation de service en utilisant le ServiceLoader avec un ClassLoader spécifique.
-     * @param serviceClass La classe du service à charger
-     * @param classLoader Le ClassLoader à utiliser
-     * @param <T> Le type du service
-     * @return Une instance du service ou null si aucune implémentation n'est trouvée
-     */
-    private static <T> T loadServiceClass(Class<T> serviceClass, ClassLoader classLoader)
-    {
-        List<T> implementations = new ArrayList<>();
-        for (T implementation : ServiceLoader.load(serviceClass, classLoader))
-        {
-            implementations.add(implementation);
-        }
-        return handleImplementations(serviceClass, implementations);
-    }
-
-    /**
-     * Gère la liste des implémentations trouvées.
-     * @param serviceClass La classe du service
-     * @param implementations La liste des implémentations trouvées
-     * @param <T> Le type du service
-     * @return Une instance du service ou un proxy qui lève une exception
-     */
-    private static <T> T handleImplementations(Class<T> serviceClass, List<T> implementations)
-    {
-        if (implementations.isEmpty())
-        {
-            return null;
-        }
-        if (implementations.size() > 1)
-        {
-            String implementationsList = implementations.stream()
-                    .map(T::getClass)
-                    .map(Class::getSimpleName)
-                    .collect(Collectors.joining(", "));
-            String errorMessage = String.format(ERROR_MULTIPLE_IMPLEMENTATIONS, 
-                serviceClass.getSimpleName(), implementationsList);
-            return createProxyInstance(serviceClass, errorMessage);
-        }
-        return implementations.get(0);
-    }
-
-    /**
-     * Charge une implémentation de service en utilisant la réflexion.
-     * @param serviceClass La classe du service à charger
-     * @param classLoader Le ClassLoader à utiliser
-     * @param <T> Le type du service
-     * @return Une instance du service ou null si l'implémentation n'est pas trouvée
-     */
-    private static <T> T loadByReflection(Class<T> serviceClass, ClassLoader classLoader)
-    {
-        String implementationClassName = FACTORY_IMPLEMENTATIONS.get(serviceClass.getName());
-        if (implementationClassName == null)
-        {
-            return null;
-        }
-        try
-        {
-            Class<?> implementationClass = Class.forName(implementationClassName, true, classLoader);
-            return serviceClass.cast(implementationClass.getConstructor().newInstance());
-        }
-        catch (Exception e)
-        {
-            return null;
-        }
-    }
-
-    /**
-     * Crée une instance de proxy qui lève une exception avec le message spécifié.
-     * @param serviceClass La classe du service
-     * @param errorMessage Le message d'erreur
-     * @param <T> Le type du service
-     * @return Une instance de proxy
-     */
-    private static <T> T createProxyInstance(Class<T> serviceClass, String errorMessage)
-    {
-        InvocationHandler handler = (proxy, method, args) -> {
-            throw new IllegalStateException(errorMessage);
-        };
-        return serviceClass.cast(Proxy.newProxyInstance(
-            serviceClass.getClassLoader(),
-            new Class<?>[] { serviceClass },
-            handler));
+        return strategy.loadServiceClass(serviceClass);
     }
 }

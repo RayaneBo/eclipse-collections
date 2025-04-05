@@ -45,9 +45,9 @@ import org.eclipse.collections.api.tuple.Pair;
 import org.eclipse.collections.api.tuple.primitive.ObjectIntPair;
 
 /**
- * A Bag is a Collection whose elements are unordered and may contain duplicate entries. It varies from
- * MutableCollection in that it adds a protocol for determining, adding, and removing the number of occurrences for an
- * item.
+ * Une Bag est une Collection dont les éléments sont non ordonnés et peuvent contenir des entrées en double.
+ * Elle diffère de MutableCollection en ce qu'elle ajoute un protocole pour déterminer, ajouter et supprimer
+ * le nombre d'occurrences d'un élément.
  *
  * @since 1.0
  */
@@ -55,93 +55,52 @@ public interface Bag<T>
         extends RichIterable<T>
 {
     /**
-     * Two bags {@code b1} and {@code b2} are equal if {@code m1.toMapOfItemToCount().equals(m2.toMapOfItemToCount())}.
+     * Deux bags {@code b1} et {@code b2} sont égaux si {@code m1.toMapOfItemToCount().equals(m2.toMapOfItemToCount())}.
      *
-     * @param otherBag the object to compare with this bag
-     * @return true if the bags are equal, false otherwise
+     * @param otherBag l'objet à comparer avec ce bag
+     * @return true si les bags sont égaux, false sinon
      * @see Map#equals(Object)
      */
     @Override
     boolean equals(Object otherBag);
 
     /**
-     * Returns the hash code for this Bag, defined as <em>this.{@link #toMapOfItemToCount()}.hashCode()</em>.
+     * Retourne le code de hachage pour ce Bag, défini comme <em>this.{@link #toMapOfItemToCount()}.hashCode()</em>.
      *
-     * @return the hash code for this bag
+     * @return le code de hachage pour ce bag
      * @see Map#hashCode()
      */
     @Override
     int hashCode();
 
-    // =============================================
-    // Transformation methods
-    // =============================================
-
-    @Override
-    Bag<T> tap(Procedure<? super T> procedure);
-
-    @Override
-    Bag<T> select(Predicate<? super T> predicate);
-
-    @Override
-    <P> Bag<T> selectWith(Predicate2<? super T, ? super P> predicate, P parameter);
-
-    @Override
-    Bag<T> reject(Predicate<? super T> predicate);
-
-    @Override
-    <P> Bag<T> rejectWith(Predicate2<? super T, ? super P> predicate, P parameter);
-
-    @Override
-    PartitionBag<T> partition(Predicate<? super T> predicate);
-
-    @Override
-    <P> PartitionBag<T> partitionWith(Predicate2<? super T, ? super P> predicate, P parameter);
-
-    @Override
-    <S> Bag<S> selectInstancesOf(Class<S> clazz);
-
-    @Override
-    <V> BagMultimap<V, T> groupBy(Function<? super T, ? extends V> function);
-
-    @Override
-    <V> BagMultimap<V, T> groupByEach(Function<? super T, ? extends Iterable<V>> function);
-
-    @Override
-    SetIterable<Pair<T, Integer>> zipWithIndex();
-
-    // =============================================
-    // Bag-specific methods
-    // =============================================
-
     /**
-     * For each distinct item, with the number of occurrences, execute the specified procedure.
+     * Pour chaque élément distinct, avec son nombre d'occurrences, exécute la procédure spécifiée.
      *
-     * @param procedure the procedure to execute for each distinct item and its count
+     * @param procedure la procédure à exécuter pour chaque élément distinct et son compte
      */
     void forEachWithOccurrences(ObjectIntProcedure<? super T> procedure);
 
     /**
-     * Returns the number of occurrences of an item.
+     * Retourne le nombre d'occurrences d'un élément.
      *
-     * @param item the item to count
-     * @return the number of occurrences of the item
+     * @param item l'élément à compter
+     * @return le nombre d'occurrences de l'élément
      */
     int occurrencesOf(Object item);
 
     /**
-     * Returns a map with the item type to its count as an Integer.
+     * Retourne une map avec le type d'élément à son compte comme un Integer.
      *
-     * @return a map of items to their counts
+     * @return une map des éléments à leurs comptes
      */
-    MutableMapIterable<T, Integer> toMapOfItemToCount();
+    MapIterable<T, Integer> toMapOfItemToCount();
 
     /**
-     * Returns true if the predicate evaluates to true for any element of the Bag.
-     * Returns false if the Bag is empty or if no element returns true for the predicate.
+     * Retourne true si le prédicat s'évalue à true pour n'importe quel élément du Bag.
+     * Retourne false si le Bag est vide ou si aucun élément ne retourne true pour le prédicat.
      *
-     * @param predicate the predicate to evaluate
-     * @return true if any element satisfies the predicate, false otherwise
+     * @param predicate le prédicat à évaluer
+     * @return true si un élément satisfait le prédicat, false sinon
      * @since 11.0
      */
     default boolean anySatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
@@ -150,11 +109,11 @@ public interface Bag<T>
     }
 
     /**
-     * Returns true if the predicate evaluates to true for all elements of the Bag.
-     * Returns false if the Bag is empty or if not all elements return true for the predicate.
+     * Retourne true si le prédicat s'évalue à true pour tous les éléments du Bag.
+     * Retourne false si le Bag est vide ou si tous les éléments ne retournent pas true pour le prédicat.
      *
-     * @param predicate the predicate to evaluate
-     * @return true if all elements satisfy the predicate, false otherwise
+     * @param predicate le prédicat à évaluer
+     * @return true si tous les éléments satisfont le prédicat, false sinon
      * @since 11.0
      */
     default boolean allSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
@@ -163,11 +122,11 @@ public interface Bag<T>
     }
 
     /**
-     * Returns true if the Bag is empty or if the predicate evaluates to false for all elements of the Bag.
-     * Returns false if the predicate evaluates to true for at least one element of the Bag.
+     * Retourne true si le Bag est vide ou si le prédicat s'évalue à false pour tous les éléments du Bag.
+     * Retourne false si le prédicat s'évalue à true pour au moins un élément du Bag.
      *
-     * @param predicate the predicate to evaluate
-     * @return true if no element satisfies the predicate, false otherwise
+     * @param predicate le prédicat à évaluer
+     * @return true si aucun élément ne satisfait le prédicat, false sinon
      * @since 11.0
      */
     default boolean noneSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
@@ -176,27 +135,27 @@ public interface Bag<T>
     }
 
     /**
-     * Returns an element of the Bag that satisfies the predicate or null if such an element does not exist.
+     * Retourne un élément du Bag qui satisfait le prédicat ou null si un tel élément n'existe pas.
      *
-     * @param predicate the predicate to evaluate
-     * @return an element that satisfies the predicate, or null if none exists
+     * @param predicate le prédicat à évaluer
+     * @return un élément qui satisfait le prédicat, ou null si aucun n'existe
      * @since 11.0
      */
     T detectWithOccurrences(ObjectIntPredicate<? super T> predicate);
 
     /**
-     * Returns all elements of the bag that have a number of occurrences that satisfy the predicate.
+     * Retourne tous les éléments du bag qui ont un nombre d'occurrences qui satisfait le prédicat.
      *
-     * @param predicate the predicate to evaluate for each element's occurrences
-     * @return a new bag containing elements that satisfy the predicate
+     * @param predicate le prédicat à évaluer pour chaque occurrence d'élément
+     * @return un nouveau bag contenant les éléments qui satisfont le prédicat
      * @since 3.0
      */
     Bag<T> selectByOccurrences(IntPredicate predicate);
 
     /**
-     * Returns all elements of the bag that have more than one occurrence.
+     * Retourne tous les éléments du bag qui ont plus d'une occurrence.
      *
-     * @return a new bag containing duplicate elements
+     * @return un nouveau bag contenant les éléments en double
      * @since 9.2
      */
     default Bag<T> selectDuplicates()
@@ -205,33 +164,33 @@ public interface Bag<T>
     }
 
     /**
-     * Returns a set containing all elements of the bag that have exactly one occurrence.
+     * Retourne un ensemble contenant tous les éléments du bag qui ont exactement une occurrence.
      *
-     * @return a set of unique elements
+     * @return un ensemble d'éléments uniques
      * @since 9.2
      */
     SetIterable<T> selectUnique();
 
     /**
-     * Returns the {@code count} most frequently occurring items.
+     * Retourne les {@code count} éléments les plus fréquemment présents.
      *
-     * In the event of a tie, all the items with the number of occurrences that match the occurrences of the last
-     * item will be returned.
+     * En cas d'égalité, tous les éléments dont le nombre d'occurrences correspond aux occurrences du dernier
+     * élément seront retournés.
      *
-     * @param count the number of top occurrences to return
-     * @return a list of the most frequently occurring items and their counts
+     * @param count le nombre d'occurrences supérieures à retourner
+     * @return une liste des éléments les plus fréquemment présents et leurs comptes
      * @since 6.0
      */
     ListIterable<ObjectIntPair<T>> topOccurrences(int count);
 
     /**
-     * Returns the {@code count} least frequently occurring items.
+     * Retourne les {@code count} éléments les moins fréquemment présents.
      *
-     * In the event of a tie, all of the items with the number of occurrences that match the occurrences of the last
-     * item will be returned.
+     * En cas d'égalité, tous les éléments dont le nombre d'occurrences correspond aux occurrences du dernier
+     * élément seront retournés.
      *
-     * @param count the number of bottom occurrences to return
-     * @return a list of the least frequently occurring items and their counts
+     * @param count le nombre d'occurrences inférieures à retourner
+     * @return une liste des éléments les moins fréquemment présents et leurs comptes
      * @since 6.0
      */
     ListIterable<ObjectIntPair<T>> bottomOccurrences(int count);
