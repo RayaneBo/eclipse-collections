@@ -74,7 +74,7 @@ public interface Bag<T>
     int hashCode();
 
     // =============================================
-    // Méthodes de transformation
+    // Transformation methods
     // =============================================
 
     @Override
@@ -111,7 +111,7 @@ public interface Bag<T>
     SetIterable<Pair<T, Integer>> zipWithIndex();
 
     // =============================================
-    // Méthodes spécifiques à Bag
+    // Bag-specific methods
     // =============================================
 
     /**
@@ -140,29 +140,46 @@ public interface Bag<T>
      * Returns true if the predicate evaluates to true for any element of the Bag.
      * Returns false if the Bag is empty or if no element returns true for the predicate.
      *
+     * @param predicate the predicate to evaluate
+     * @return true if any element satisfies the predicate, false otherwise
      * @since 11.0
      */
-    boolean anySatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate);
+    default boolean anySatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
+    {
+        return this.detectWithOccurrences(predicate) != null;
+    }
 
     /**
      * Returns true if the predicate evaluates to true for all elements of the Bag.
      * Returns false if the Bag is empty or if not all elements return true for the predicate.
      *
+     * @param predicate the predicate to evaluate
+     * @return true if all elements satisfy the predicate, false otherwise
      * @since 11.0
      */
-    boolean allSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate);
+    default boolean allSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
+    {
+        return !this.anySatisfyWithOccurrences((each, occurrences) -> !predicate.accept(each, occurrences));
+    }
 
     /**
      * Returns true if the Bag is empty or if the predicate evaluates to false for all elements of the Bag.
      * Returns false if the predicate evaluates to true for at least one element of the Bag.
      *
+     * @param predicate the predicate to evaluate
+     * @return true if no element satisfies the predicate, false otherwise
      * @since 11.0
      */
-    boolean noneSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate);
+    default boolean noneSatisfyWithOccurrences(ObjectIntPredicate<? super T> predicate)
+    {
+        return !this.anySatisfyWithOccurrences(predicate);
+    }
 
     /**
-     * Returns an element of the Bag that satisfies the predicate or null if such an element does not exist
+     * Returns an element of the Bag that satisfies the predicate or null if such an element does not exist.
      *
+     * @param predicate the predicate to evaluate
+     * @return an element that satisfies the predicate, or null if none exists
      * @since 11.0
      */
     T detectWithOccurrences(ObjectIntPredicate<? super T> predicate);
@@ -170,6 +187,8 @@ public interface Bag<T>
     /**
      * Returns all elements of the bag that have a number of occurrences that satisfy the predicate.
      *
+     * @param predicate the predicate to evaluate for each element's occurrences
+     * @return a new bag containing elements that satisfy the predicate
      * @since 3.0
      */
     Bag<T> selectByOccurrences(IntPredicate predicate);
@@ -177,6 +196,7 @@ public interface Bag<T>
     /**
      * Returns all elements of the bag that have more than one occurrence.
      *
+     * @return a new bag containing duplicate elements
      * @since 9.2
      */
     default Bag<T> selectDuplicates()
@@ -187,6 +207,7 @@ public interface Bag<T>
     /**
      * Returns a set containing all elements of the bag that have exactly one occurrence.
      *
+     * @return a set of unique elements
      * @since 9.2
      */
     SetIterable<T> selectUnique();
@@ -197,6 +218,8 @@ public interface Bag<T>
      * In the event of a tie, all the items with the number of occurrences that match the occurrences of the last
      * item will be returned.
      *
+     * @param count the number of top occurrences to return
+     * @return a list of the most frequently occurring items and their counts
      * @since 6.0
      */
     ListIterable<ObjectIntPair<T>> topOccurrences(int count);
@@ -207,12 +230,16 @@ public interface Bag<T>
      * In the event of a tie, all of the items with the number of occurrences that match the occurrences of the last
      * item will be returned.
      *
+     * @param count the number of bottom occurrences to return
+     * @return a list of the least frequently occurring items and their counts
      * @since 6.0
      */
     ListIterable<ObjectIntPair<T>> bottomOccurrences(int count);
 
     /**
      * The size of the Bag when counting only distinct elements.
+     *
+     * @return the number of distinct elements in the bag
      */
     int sizeDistinct();
 
@@ -230,9 +257,18 @@ public interface Bag<T>
      */
     String toStringOfItemToCount();
 
+    /**
+     * Returns an immutable copy of this bag.
+     *
+     * @return an immutable bag containing the same elements as this bag
+     */
     ImmutableBagIterable<T> toImmutable();
 
     /**
+     * Returns summary statistics for the int values produced by applying the function to each element.
+     *
+     * @param function the function to apply to each element
+     * @return summary statistics for the int values
      * @since 8.0
      */
     @Override
@@ -251,6 +287,10 @@ public interface Bag<T>
     }
 
     /**
+     * Returns summary statistics for the float values produced by applying the function to each element.
+     *
+     * @param function the function to apply to each element
+     * @return summary statistics for the float values
      * @since 8.0
      */
     @Override
@@ -269,6 +309,10 @@ public interface Bag<T>
     }
 
     /**
+     * Returns summary statistics for the long values produced by applying the function to each element.
+     *
+     * @param function the function to apply to each element
+     * @return summary statistics for the long values
      * @since 8.0
      */
     @Override
@@ -287,6 +331,10 @@ public interface Bag<T>
     }
 
     /**
+     * Returns summary statistics for the double values produced by applying the function to each element.
+     *
+     * @param function the function to apply to each element
+     * @return summary statistics for the double values
      * @since 8.0
      */
     @Override
@@ -307,6 +355,10 @@ public interface Bag<T>
     /**
      * This method produces the equivalent result as {@link Stream#collect(Collector)}.
      *
+     * @param collector the collector to use
+     * @param <R> the type of the result
+     * @param <A> the intermediate accumulation type of the collector
+     * @return the result of the collection
      * @since 8.0
      */
     @Override
@@ -327,6 +379,10 @@ public interface Bag<T>
     /**
      * This method produces the equivalent result as {@link Stream#collect(Supplier, BiConsumer, BiConsumer)}.
      *
+     * @param supplier the supplier to create the result container
+     * @param accumulator the accumulator to add elements to the result
+     * @param <R> the type of the result
+     * @return the result of the collection
      * @since 8.0
      */
     @Override
@@ -346,6 +402,9 @@ public interface Bag<T>
     /**
      * Iterates over the unique elements and their occurrences and collects the results of applying the specified function.
      *
+     * @param function the function to apply to each element and its occurrences
+     * @param <V> the type of the result
+     * @return a rich iterable of the results
      * @since 10.0
      */
     <V> RichIterable<V> collectWithOccurrences(ObjectIntToObjectFunction<? super T, ? extends V> function);
@@ -354,7 +413,12 @@ public interface Bag<T>
      * Iterates over the unique elements and their occurrences and collects the results of applying the
      * specified function into the target collection.
      *
-     * @since 9.1.
+     * @param function the function to apply to each element and its occurrences
+     * @param target the target collection to add results to
+     * @param <V> the type of the result
+     * @param <R> the type of the target collection
+     * @return the target collection with the results added
+     * @since 9.1
      */
     default <V, R extends Collection<V>> R collectWithOccurrences(
             ObjectIntToObjectFunction<? super T, ? extends V> function,
@@ -371,6 +435,14 @@ public interface Bag<T>
      *
      * This method is overridden and optimized for Bag to use forEachWithOccurrences instead of forEach.
      *
+     * @param groupBy the function to group elements by
+     * @param zeroValueFactory the function to create initial values
+     * @param nonMutatingAggregator the function to aggregate values
+     * @param target the target map to store results in
+     * @param <K> the type of the keys
+     * @param <V> the type of the values
+     * @param <R> the type of the target map
+     * @return the target map with the aggregated results
      * @since 10.3
      */
     @Override
@@ -391,6 +463,16 @@ public interface Bag<T>
         return target;
     }
 
+    /**
+     * Reduces the elements of this bag by grouping them according to the specified function and applying the reduce function.
+     *
+     * @param groupBy the function to group elements by
+     * @param reduceFunction the function to reduce values
+     * @param target the target map to store results in
+     * @param <K> the type of the keys
+     * @param <R> the type of the target map
+     * @return the target map with the reduced results
+     */
     @Override
     default <K, R extends MutableMapIterable<K, T>> R reduceBy(
             Function<? super T, ? extends K> groupBy,
