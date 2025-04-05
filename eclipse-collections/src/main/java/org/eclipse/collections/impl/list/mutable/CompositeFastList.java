@@ -79,11 +79,11 @@ public final class CompositeFastList<E>
     private int size;
 
     // =============================================
-    // Constructeurs
+    // Constructors
     // =============================================
 
     /**
-     * Constructeur par défaut qui initialise une liste composite vide.
+     * Default constructor that initializes an empty composite list.
      */
     public CompositeFastList()
     {
@@ -92,16 +92,16 @@ public final class CompositeFastList<E>
     }
 
     /**
-     * Constructeur qui initialise une liste composite avec une capacité initiale spécifiée.
+     * Constructor that initializes a composite list with a specified initial capacity.
      *
-     * @param initialCapacity la capacité initiale de la liste
-     * @throws IllegalArgumentException si initialCapacity est négatif
+     * @param initialCapacity the initial capacity of the list
+     * @throws IllegalArgumentException if initialCapacity is negative
      */
     public CompositeFastList(int initialCapacity)
     {
         if (initialCapacity < 0)
         {
-            throw new IllegalArgumentException("La capacité initiale ne peut pas être négative");
+            throw new IllegalArgumentException("Initial capacity cannot be negative");
         }
         this.lists = FastList.newList(Math.max(initialCapacity, MINIMUM_INITIAL_CAPACITY));
         this.size = DEFAULT_INITIAL_CAPACITY;
@@ -253,6 +253,33 @@ public final class CompositeFastList<E>
     }
 
     @Override
+    public boolean containsAll(Collection<?> collection)
+    {
+        return Iterate.allSatisfy(collection, Predicates.in(this));
+    }
+
+    @Override
+    public Object[] toArray(Object[] array)
+    {
+        int size = this.size();
+        Object[] result = array.length >= size
+                ? array
+                : (Object[]) Array.newInstance(array.getClass().getComponentType(), size);
+
+        this.forEachWithIndex((each, index) -> result[index] = each);
+
+        if (result.length > size)
+        {
+            result[size] = null;
+        }
+        return result;
+    }
+
+    // =============================================
+    // Modification methods
+    // =============================================
+
+    @Override
     public boolean add(E object)
     {
         if (this.lists.isEmpty())
@@ -286,45 +313,6 @@ public final class CompositeFastList<E>
                 collection instanceof FastList ? collection : FastList.newList(collection);
         this.addComposited(collectionToAdd);
         return true;
-    }
-
-    @Override
-    public boolean containsAll(Collection<?> collection)
-    {
-        return Iterate.allSatisfy(collection, Predicates.in(this));
-    }
-
-    @Override
-    public Object[] toArray(Object[] array)
-    {
-        int size = this.size();
-        Object[] result = array.length >= size
-                ? array
-                : (Object[]) Array.newInstance(array.getClass().getComponentType(), size);
-
-        this.forEachWithIndex((each, index) -> result[index] = each);
-
-        if (result.length > size)
-        {
-            result[size] = null;
-        }
-        return result;
-    }
-
-    public void addComposited(Collection<? extends E> collection)
-    {
-        if (!(collection instanceof FastList))
-        {
-            throw new IllegalArgumentException("CompositeFastList can only add FastLists");
-        }
-        this.size += collection.size();
-        this.lists.add((FastList<E>) collection);
-    }
-
-    @Override
-    public boolean addAll(int index, Collection<? extends E> collection)
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".addAll(index, collection) not implemented yet");
     }
 
     @Override
@@ -380,14 +368,6 @@ public final class CompositeFastList<E>
             currentSize = this.lists.get(++p).size();
         }
         return this.lists.get(p).items[index];
-    }
-
-    private void rangeCheck(int index)
-    {
-        if (index >= this.size())
-        {
-            throw new IndexOutOfBoundsException("No such element " + index + " size: " + this.size());
-        }
     }
 
     @Override
@@ -780,5 +760,34 @@ public final class CompositeFastList<E>
     public ParallelListIterable<E> asParallel(ExecutorService executorService, int batchSize)
     {
         return new NonParallelListIterable<>(this);
+    }
+
+    /**
+     * Checks if the index is within the bounds of the list.
+     * @param index the index to check
+     * @throws IndexOutOfBoundsException if the index is out of bounds
+     */
+    private void rangeCheck(int index)
+    {
+        if (index >= this.size())
+        {
+            throw new IndexOutOfBoundsException("No such element " + index + " size: " + this.size());
+        }
+    }
+
+    /**
+     * Adds a collection to the composite list.
+     * Side effect: modifies the composite list by adding a new sublist.
+     * @param collection the collection to add
+     * @throws IllegalArgumentException if the collection is not a FastList
+     */
+    public void addComposited(Collection<? extends E> collection)
+    {
+        if (!(collection instanceof FastList))
+        {
+            throw new IllegalArgumentException("CompositeFastList can only add FastLists");
+        }
+        this.size += collection.size();
+        this.lists.add((FastList<E>) collection);
     }
 }
