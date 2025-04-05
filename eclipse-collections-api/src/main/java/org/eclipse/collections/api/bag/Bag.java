@@ -57,18 +57,25 @@ public interface Bag<T>
     /**
      * Two bags {@code b1} and {@code b2} are equal if {@code m1.toMapOfItemToCount().equals(m2.toMapOfItemToCount())}.
      *
+     * @param otherBag the object to compare with this bag
+     * @return true if the bags are equal, false otherwise
      * @see Map#equals(Object)
      */
     @Override
-    boolean equals(Object object);
+    boolean equals(Object otherBag);
 
     /**
      * Returns the hash code for this Bag, defined as <em>this.{@link #toMapOfItemToCount()}.hashCode()</em>.
      *
+     * @return the hash code for this bag
      * @see Map#hashCode()
      */
     @Override
     int hashCode();
+
+    // =============================================
+    // Méthodes de transformation
+    // =============================================
 
     @Override
     Bag<T> tap(Procedure<? super T> procedure);
@@ -103,10 +110,31 @@ public interface Bag<T>
     @Override
     SetIterable<Pair<T, Integer>> zipWithIndex();
 
+    // =============================================
+    // Méthodes spécifiques à Bag
+    // =============================================
+
     /**
      * For each distinct item, with the number of occurrences, execute the specified procedure.
+     *
+     * @param procedure the procedure to execute for each distinct item and its count
      */
     void forEachWithOccurrences(ObjectIntProcedure<? super T> procedure);
+
+    /**
+     * Returns the number of occurrences of an item.
+     *
+     * @param item the item to count
+     * @return the number of occurrences of the item
+     */
+    int occurrencesOf(Object item);
+
+    /**
+     * Returns a map with the item type to its count as an Integer.
+     *
+     * @return a map of items to their counts
+     */
+    MutableMapIterable<T, Integer> toMapOfItemToCount();
 
     /**
      * Returns true if the predicate evaluates to true for any element of the Bag.
@@ -138,11 +166,6 @@ public interface Bag<T>
      * @since 11.0
      */
     T detectWithOccurrences(ObjectIntPredicate<? super T> predicate);
-
-    /**
-     * The occurrences of a distinct item in the bag.
-     */
-    int occurrencesOf(Object item);
 
     /**
      * Returns all elements of the bag that have a number of occurrences that satisfy the predicate.
@@ -194,11 +217,6 @@ public interface Bag<T>
     int sizeDistinct();
 
     /**
-     * Converts the Bag to a Map of the Item type to its count as an Integer.
-     */
-    MapIterable<T, Integer> toMapOfItemToCount();
-
-    /**
      * Returns a string representation of this bag. The string representation consists of a list of element-count mappings.
      *
      * <pre>
@@ -213,17 +231,6 @@ public interface Bag<T>
     String toStringOfItemToCount();
 
     ImmutableBagIterable<T> toImmutable();
-
-    /**
-     * Returns an unmodifiable view on the distinct elements with the same complexity as the Bag implementation.
-     *
-     * @return an unmodifiable view on the distinct elements of the Bag.
-     * @since 11.1
-     */
-    default RichIterable<T> distinctView()
-    {
-        throw new UnsupportedOperationException(this.getClass().getSimpleName() + ".distinctView() not implemented yet");
-    }
 
     /**
      * @since 8.0
