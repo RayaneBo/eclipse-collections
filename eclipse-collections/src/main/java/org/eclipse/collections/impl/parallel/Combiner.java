@@ -13,112 +13,69 @@ package org.eclipse.collections.impl.parallel;
 import java.io.Serializable;
 import java.util.Objects;
 
+import org.eclipse.collections.api.parallel.CombinationStrategy;
 import org.eclipse.collections.impl.utility.Iterate;
 
 /**
- * Une interface représentant un combinateur qui peut fusionner les résultats de plusieurs procédures parallèles.
- * Cette interface est utilisée pour combiner les résultats de tâches exécutées en parallèle.
+ * Une classe qui combine les résultats de procédures parallèles en utilisant une stratégie de combinaison.
  *
  * @param <T> Le type des éléments à combiner
+ * @param <R> Le type du résultat de la combinaison
  */
-public interface Combiner<T> extends Serializable
+public class Combiner<T, R> implements Serializable
 {
-    /**
-     * Combine tous les éléments d'une collection itérable.
-     * Par défaut, cette méthode appelle {@link #combineOne} pour chaque élément.
-     *
-     * @param thingsToCombine la collection d'éléments à combiner
-     * @throws NullPointerException si thingsToCombine est null
-     * @throws CombinerException si une erreur survient pendant la combinaison
-     */
-    default void combineAll(Iterable<T> thingsToCombine)
+    private static final long serialVersionUID = 1L;
+    private final CombinationStrategy<T, R> strategy;
+    private R result;
+
+    public Combiner(CombinationStrategy<T, R> strategy)
     {
-        Objects.requireNonNull(thingsToCombine, "thingsToCombine ne peut pas être null");
-        try
+        this.strategy = Objects.requireNonNull(strategy, "La stratégie ne peut pas être null");
+        this.result = strategy.getInitialValue();
+    }
+
+    /**
+     * Combine tous les éléments de l'itérable donné.
+     *
+     * @param thingsToCombine L'itérable des éléments à combiner
+     * @throws NullPointerException si thingsToCombine est null
+     */
+    public void combineAll(Iterable<T> thingsToCombine)
+    {
+        Objects.requireNonNull(thingsToCombine, "L'itérable ne peut pas être null");
+        for (T each : thingsToCombine)
         {
-            Iterate.forEach(thingsToCombine, this::combineOne);
-        }
-        catch (Exception e)
-        {
-            throw new CombinerException("Erreur lors de la combinaison des éléments", e);
+            this.combineOne(each);
         }
     }
 
     /**
      * Combine un seul élément.
      *
-     * @param thingToCombine l'élément à combiner
-     * @throws NullPointerException si thingToCombine est null
-     * @throws CombinerException si une erreur survient pendant la combinaison
+     * @param thingToCombine L'élément à combiner
      */
-    void combineOne(T thingToCombine);
-
-    /**
-     * Indique si la méthode {@link #combineOne} doit être utilisée pour combiner les résultats.
-     * Si false, la méthode {@link #combineAll} sera utilisée à la place.
-     *
-     * @return true si combineOne doit être utilisé, false sinon
-     */
-    boolean useCombineOne();
-
-    /**
-     * Vérifie si le combinateur est valide pour une utilisation.
-     * Par défaut, retourne toujours true. Les implémentations peuvent surcharger cette méthode
-     * pour ajouter des validations spécifiques.
-     *
-     * @return true si le combinateur est valide, false sinon
-     * @throws CombinerValidationException si le combinateur n'est pas valide
-     */
-    default boolean isValid()
+    public void combineOne(T thingToCombine)
     {
-        return true;
+        this.result = this.strategy.combineOne(thingToCombine, this.result);
     }
 
     /**
-     * Réinitialise l'état du combinateur.
-     * Par défaut, ne fait rien. Les implémentations peuvent surcharger cette méthode
-     * pour réinitialiser leur état interne.
+     * Vérifie si la combinaison doit être faite un par un.
      *
-     * @throws CombinerException si une erreur survient pendant la réinitialisation
+     * @return true si la combinaison doit être faite un par un, false sinon
      */
-    default void reset()
+    public boolean useCombineOne()
     {
-        // Ne fait rien par défaut
-    }
-}
-
-/**
- * Exception levée lorsqu'une erreur survient pendant la combinaison des éléments.
- */
-class CombinerException extends RuntimeException
-{
-    private static final long serialVersionUID = 1L;
-
-    public CombinerException(String message)
-    {
-        super(message);
+        return this.strategy.useCombineOne();
     }
 
-    public CombinerException(String message, Throwable cause)
+    /**
+     * Retourne le résultat de la combinaison.
+     *
+     * @return Le résultat de la combinaison
+     */
+    public R getResult()
     {
-        super(message, cause);
-    }
-}
-
-/**
- * Exception levée lorsqu'une validation du combinateur échoue.
- */
-class CombinerValidationException extends RuntimeException
-{
-    private static final long serialVersionUID = 1L;
-
-    public CombinerValidationException(String message)
-    {
-        super(message);
-    }
-
-    public CombinerValidationException(String message, Throwable cause)
-    {
-        super(message, cause);
+        return this.result;
     }
 }
