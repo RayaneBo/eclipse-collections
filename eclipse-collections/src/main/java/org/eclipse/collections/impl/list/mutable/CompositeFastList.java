@@ -55,12 +55,57 @@ public final class CompositeFastList<E>
         extends AbstractMutableList<E>
         implements BatchIterable<E>, Serializable
 {
+    // =============================================
+    // Constantes
+    // =============================================
+
+    // Constantes pour les tailles initiales
+    private static final int DEFAULT_INITIAL_CAPACITY = 0;
+    private static final int MINIMUM_INITIAL_CAPACITY = 1;
+    private static final int DEFAULT_BATCH_SIZE = 1;
+
+    // Constantes pour les prédicats et procédures
     private static final Predicate2<FastList<?>, Object> REMOVE_PREDICATE = FastList::remove;
     private static final Procedure<FastList<?>> REVERSE_LIST_PROCEDURE = FastList::reverseThis;
 
+    // Constantes pour la sérialisation
     private static final long serialVersionUID = 2L;
-    private final FastList<FastList<E>> lists = FastList.newList();
+
+    // =============================================
+    // Variables d'instance
+    // =============================================
+
+    private final FastList<FastList<E>> lists;
     private int size;
+
+    // =============================================
+    // Constructeurs
+    // =============================================
+
+    /**
+     * Constructeur par défaut qui initialise une liste composite vide.
+     */
+    public CompositeFastList()
+    {
+        this.lists = FastList.newList(DEFAULT_INITIAL_CAPACITY);
+        this.size = DEFAULT_INITIAL_CAPACITY;
+    }
+
+    /**
+     * Constructeur qui initialise une liste composite avec une capacité initiale spécifiée.
+     *
+     * @param initialCapacity la capacité initiale de la liste
+     * @throws IllegalArgumentException si initialCapacity est négatif
+     */
+    public CompositeFastList(int initialCapacity)
+    {
+        if (initialCapacity < 0)
+        {
+            throw new IllegalArgumentException("La capacité initiale ne peut pas être négative");
+        }
+        this.lists = FastList.newList(Math.max(initialCapacity, MINIMUM_INITIAL_CAPACITY));
+        this.size = DEFAULT_INITIAL_CAPACITY;
+    }
 
     @Override
     public MutableList<E> clone()
@@ -93,7 +138,7 @@ public final class CompositeFastList<E>
         }
         else
         {
-            this.lists.get(sectionIndex).batchForEach(procedure, 0, 1);
+            this.lists.get(sectionIndex).batchForEach(procedure, 0, DEFAULT_BATCH_SIZE);
         }
     }
 
